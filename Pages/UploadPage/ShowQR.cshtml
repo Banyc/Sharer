@@ -1,0 +1,19 @@
+@page
+@model ShowQRModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="container mb-2">
+    <h1 class="h1">Entrances</h1>
+    <div class="text-center">
+        @foreach (IpQr ipQr in Model.IpQrs)
+        {
+            <div class="container mb-2">
+                <h1 class="display-4">@ipQr.config.name</h1>
+                <h1 class="h1 text-muted">@ipQr.config.ip</h1>
+                <img class="img-fluid w-50" src="@ipQr.qr">
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,14 @@
+@page
+@model UploadPageModel
+@{
+    ViewData["Title"] = "Upload page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Upload</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="text" class="form-control mb-1" name="addition_text" placeholder="Please type in ..." autofocus/>
+        <input type="file" class="form-control btn btn-outline-primary mb-1" name="input_file" value ="Upload file here"/>
+        <button type="submit" class="form-control btn btn-outline-secondary">Submit</button>
+    </form>
+</div>
