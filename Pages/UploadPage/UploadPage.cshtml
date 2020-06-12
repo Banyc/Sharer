@@ -4,11 +4,17 @@
     ViewData["Title"] = "Upload page";
 }
 
-<div class="text-center">
+<style>
+    .full-height {
+        height: 100%;
+    }
+</style>
+
+<div class="text-center full-height">
     <h1 class="display-4">Upload</h1>
     <form method="POST" enctype="multipart/form-data">
-        <input type="text" class="form-control mb-1" name="addition_text" placeholder="Please type in ..." autofocus/>
-        <input type="file" class="form-control btn btn-outline-primary mb-1" name="input_file" value ="Upload file here"/>
-        <button type="submit" class="form-control btn btn-outline-secondary">Submit</button>
+        <input type="text" class="form-control mb-1" name="addition_text" style="height:50px" placeholder="Please type in ..." autofocus/>
+        <input type="file" class="btn-lg form-control btn btn-outline-primary mb-1" style="height:80px" name="input_file" value ="Upload file here" multiple/>
+        <button type="submit" class="btn-lg form-control btn btn-outline-secondary" style="height:50px">Submit</button>
     </form>
 </div>

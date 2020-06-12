@@ -15,13 +15,10 @@ namespace Sharer.Pages.UploadPage
 {
     public class UploadPageModel : PageModel
     {
-
         public void OnGet()
         {
             
         }
-
-        
 
         public async Task<IActionResult> OnPost()
         {
@@ -39,6 +36,19 @@ namespace Sharer.Pages.UploadPage
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
                         await file.CopyToAsync(fileStream);
+
+                        // fileStream.Seek(0, SeekOrigin.Begin);
+
+                        //     System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(fileStream);
+                        //     SetClipboard(bitmap);
+                        // try
+                        // {
+                        // }
+                        // catch (Exception e)
+                        // {
+
+                        // }
+
                     }
 
                 }
@@ -51,5 +61,18 @@ namespace Sharer.Pages.UploadPage
 
             return Page();
         }
+
+        // private void SetClipboard(System.Drawing.Bitmap bitmap)
+        // {
+        //     // Assembly assembly = Assembly.LoadFrom("./ClipboardHelper.dll");
+        //     // Type type = assembly.GetType("ClipboardHelper.SetClipboard");
+        //     // object instanceOfSetClipboard = Activator.CreateInstance(type);
+
+        //     // MethodInfo[] methods = type.GetMethods();
+        //     // object res = methods[1].Invoke(instanceOfSetClipboard, new object[] {bitmap});
+
+        //     ClipboardHelper.SetClipboard helper = new ClipboardHelper.SetClipboard();
+        //     helper.AddImage(bitmap);
+        // }
     }
 }
