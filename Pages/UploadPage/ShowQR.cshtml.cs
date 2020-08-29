@@ -22,49 +22,48 @@ namespace Sharer.Pages.UploadPage
     // data structure
     public class IpConfig
     {
-        public string name;
-        public string ip;
+        public string Name { get; set; }
+        public string Ip { get; set; }
+        public string UnsafeUrl
+        {
+            get
+            {
+                return $"http://{this.Ip}";
+            }
+        }
+        public string SafeUrl
+        {
+            get
+            {
+                return $"https://{this.Ip}";
+            }
+        }
     }
 
     // data structure
     public class IpQr
     {
-        public IpConfig config;
-        public string qr;
-    }
-    
-    public class ShowQRModel : PageModel
-    {
-        public List<IpQr> IpQrs {set;get;}
-
-        public ShowQRModel()
+        public IpConfig Config { get; set; }
+        public string UnsafeQr
         {
-            IpQrs = new List<IpQr>();
+            get
+            {
+                return GetBase64Qr(this.Config.SafeUrl);
+            }
+        }
+        public string SafeQr
+        {
+            get
+            {
+                return GetBase64Qr(this.Config.SafeUrl);
+            }
         }
 
-        public IActionResult OnGet()
+        private string GetBase64Qr(string content)
         {
-            string ip = HttpContext.Connection.RemoteIpAddress.ToString();
-            if (ip == "::1" || ip == "127.0.0.1" || ip == "localhost")
-            {
-                List<IpConfig> ipConfigs = GetThisIPConfig();
-                foreach (IpConfig ipConfig in ipConfigs)
-                {
-                    IpQr pack = new IpQr();
-                    pack.config = ipConfig;
-                    var bitmapBytes = BitmapToBytes(GetQR(ipConfig.ip)); //Convert bitmap into a byte array
-                    string base64Image = Convert.ToBase64String(bitmapBytes);
-                    pack.qr = "data:image/gif;base64," + base64Image;
-
-                    IpQrs.Add(pack);
-                }
-
-                return Page();
-            }
-            else
-            {
-                return RedirectToPage("/UploadPage/UploadPage");
-            }
+            var bitmapBytes = BitmapToBytes(GetQR(content)); //Convert bitmap into a byte array
+            string base64Image = Convert.ToBase64String(bitmapBytes);
+            return "data:image/gif;base64," + base64Image;
         }
 
         private Bitmap GetQR(string text)
@@ -85,6 +84,37 @@ namespace Sharer.Pages.UploadPage
                 return stream.ToArray();
             }
         }
+    }
+
+    public class ShowQRModel : PageModel
+    {
+        public List<IpQr> IpQrs { set; get; }
+
+        public ShowQRModel()
+        {
+            IpQrs = new List<IpQr>();
+        }
+
+        public IActionResult OnGet()
+        {
+            string ip = HttpContext.Connection.RemoteIpAddress.ToString();
+            if (ip == "::1" || ip == "127.0.0.1" || ip == "localhost")
+            {
+                List<IpConfig> ipConfigs = GetThisIPConfig();
+                foreach (IpConfig ipConfig in ipConfigs)
+                {
+                    IpQr pack = new IpQr();
+                    pack.Config = ipConfig;
+                    IpQrs.Add(pack);
+                }
+
+                return Page();
+            }
+            else
+            {
+                return RedirectToPage("/UploadPage/UploadPage");
+            }
+        }
 
         private List<IpConfig> GetThisIPConfig()
         {
@@ -100,7 +130,7 @@ namespace Sharer.Pages.UploadPage
                 foreach (NetworkInterface upInterface in upInterfaces)
                 {
                     IpConfig config = new IpConfig();
-                    config.name = upInterface.Name;
+                    config.Name = upInterface.Name;
 
                     var props = upInterface.GetIPProperties();
                     // get first IPV4 address assigned to this interface
@@ -108,7 +138,7 @@ namespace Sharer.Pages.UploadPage
                         .Where(c => c.Address.AddressFamily == AddressFamily.InterNetwork)
                         .Select(c => c.Address)
                         .FirstOrDefault();
-                    config.ip = "http://" + firstIpV4Address.ToString();
+                    config.Ip = firstIpV4Address.ToString();
                     configs.Add(config);
                 }
             }
