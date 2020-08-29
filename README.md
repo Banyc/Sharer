@@ -21,3 +21,8 @@ For windows users
 - let your device scan the QR code of the secure channel
 - send photo or text
 - check the photo in the popped-up file explorer or find the text in the console
+
+## TODO
+
+- [ ] Password + ban IP after excessive tries
+- [ ] Add "Open download folder" on the QR page

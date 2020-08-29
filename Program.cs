@@ -22,7 +22,7 @@ namespace Sharer
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls("http://*");  // this overrides the Configuration file
+                    // webBuilder.UseUrls("http://*");  // this overrides the Configuration file
                 });
     }
 }
