@@ -2,9 +2,21 @@
 
 Share photo and text from any device to computer
 
+## Demo
+
+### Server-side
+
+![](img/demo.showQr.png)
+
+### Client-side
+
+![](img/demo.upload.png)
+
 ## Warning
 
-This app does NOT provide any security. The message sent is not encrypted, which might be safely passed in a trusted LAN or through a private hot spot.
+This app does NOT provide any security. Under HTTP protocol, the message sent is not encrypted, which might be safely passed in a trusted LAN or through a private hot spot.
+
+If using SSL protocol, the certificate is self-signed. Before sending files, please make sure the public key fields of certificates in both client and server are identical.
 
 ## Build
 
@@ -14,13 +26,18 @@ This might cost a long time
 
 ## How to use
 
-For windows users
+For windows users:
 
-- run `Launch.bat`
-- make sure your device is in the same LAN as your computer
-- let your device scan the QR code of the secure channel
-- send photo or text
-- check the photo in the popped-up file explorer or find the text in the console
+1. run `Launch.bat`
+1. make sure your device is in the same LAN as your computer
+1. let your device scan the QR code of the secure channel
+1. send photo or text
+1. check the photo in the popped-up file explorer or find the text in the console
+
+For Linux + MacOS users:
+
+- run `dotnet run`
+- the folder `upload.user` in the root of the project is where the files locate.
 
 ## TODO
 
