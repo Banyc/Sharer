@@ -31,8 +31,8 @@ namespace Sharer.Pages.UploadPage
             {
                 if (file.Length > 0 && file.Length < 1024 * 1024 * 50)
                 {
-                    // var filePath = Path.Combine("./uploads", string.Format("{0}_{1}", file.FileName, DateTime.Now.ToString("MMM ddd d HH:mm yyyy")));
-                    var filePath = Path.Combine("./uploads.user", string.Format("{1}_{2}_{0}", file.FileName, DateTime.Now.ToString("yyyy.MM.dd.HH.mm.ss"), addition));
+                    // for security, any user input should not be taken as file name.
+                    var filePath = Path.Combine("./uploads.user", string.Format("{0}.{1}{2}", DateTime.Now.ToString("yyyy.MM.dd.HH.mm.ss"), Guid.NewGuid(), Path.GetExtension(file.FileName)));
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
                         await file.CopyToAsync(fileStream);
