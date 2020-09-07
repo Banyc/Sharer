@@ -97,6 +97,13 @@ namespace Sharer.Pages.UploadPage
 
         public IActionResult OnGet()
         {
+            List<IpConfig> ipConfigs = GetThisIPConfig();
+            foreach (IpConfig ipConfig in ipConfigs)
+            {
+                IpQr pack = new IpQr();
+                pack.Config = ipConfig;
+                IpQrs.Add(pack);
+            }
             return Page();
         }
 
