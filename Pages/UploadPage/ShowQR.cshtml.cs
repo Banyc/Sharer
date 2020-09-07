@@ -97,23 +97,7 @@ namespace Sharer.Pages.UploadPage
 
         public IActionResult OnGet()
         {
-            string ip = HttpContext.Connection.RemoteIpAddress.ToString();
-            if (ip == "::1" || ip == "127.0.0.1" || ip == "localhost")
-            {
-                List<IpConfig> ipConfigs = GetThisIPConfig();
-                foreach (IpConfig ipConfig in ipConfigs)
-                {
-                    IpQr pack = new IpQr();
-                    pack.Config = ipConfig;
-                    IpQrs.Add(pack);
-                }
-
-                return Page();
-            }
-            else
-            {
-                return RedirectToPage("/UploadPage/UploadPage");
-            }
+            return Page();
         }
 
         private List<IpConfig> GetThisIPConfig()
