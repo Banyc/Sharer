@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Http;
 
 namespace Sharer.Pages.UploadPage
 {
+    [RequestFormLimits(MultipartBodyLengthLimit = 1024 * 1024 * 1024)]
+    [RequestSizeLimit(1024 * 1024 * 1024)]
     public class UploadPageModel : PageModel
     {
         public void OnGet()
