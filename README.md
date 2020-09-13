@@ -14,9 +14,11 @@ Share photo and text from any device to computer
 
 ## Warning
 
-This app does NOT provide any security. Under HTTP protocol, the message sent is not encrypted, which might be safely passed in a trusted LAN or through a private hot spot.
-
-If using SSL protocol, the certificate is self-signed. Before sending files, please make sure the public key fields of certificates in both client and server are identical.
+- About security
+    - This app does NOT provide any security. Under HTTP protocol, the message sent is not encrypted, which might be safely passed in a trusted LAN or through a private hot spot.
+    - If using SSL protocol, the certificate is self-signed. Before sending files, please make sure the public key fields of certificates in both client and server are identical.
+- About performance
+    - The file transfer is only performed by form posting.
 
 ## Build
 
@@ -41,5 +43,7 @@ For Linux + MacOS users:
 
 ## TODO
 
-- [ ] Password + ban IP after excessive tries
+- ~~[ ] Password + ban IP after excessive tries~~
 - [ ] Add "Open download folder" on the QR page
+- [ ] Huge file transfer
+    - Transfer through RESTful API
