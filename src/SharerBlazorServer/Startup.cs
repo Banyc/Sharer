@@ -14,6 +14,7 @@ using SharerBlazorServer.Data;
 using Tewr.Blazor.FileReader;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using SharerBlazorServer.Services;
+using SharerBlazorServer.Controllers;
 
 namespace SharerBlazorServer
 {
@@ -40,6 +41,7 @@ namespace SharerBlazorServer
             services.AddSingleton<ResumeFileService>();
             services.AddOptions();
             services.Configure<ResumeFileSettings>(this.Configuration.GetSection("ResumeFileSettings"));
+            services.Configure<FileDownloadControllerSettings>(this.Configuration.GetSection("FileDownloadControllerSettings"));
             services.AddControllers();
             // services.AddTransient(_ => new HttpClient { BaseAddress = new Uri(this.Configuration.GetValue<string>("BaseUrl")) });
             // services.AddTransient(_ => new HttpClient { BaseAddress = new Uri(this.Configuration.GetValue<string>("Url")) });
