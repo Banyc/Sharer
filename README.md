@@ -20,6 +20,10 @@ Share photo and text from any device to computer
 - About performance
     - The file transfer is only performed by form posting.
 
+## Notices
+
+The presumed `pwd` is `./src/Sharer`.
+
 ## Build
 
 This might cost a long time
@@ -46,4 +50,5 @@ For Linux + MacOS users:
 - ~~[ ] Password + ban IP after excessive tries~~
 - [ ] Add "Open download folder" on the QR page
 - [ ] Huge file transfer
-    - Transfer through RESTful API
+- [ ] Transfer through RESTful API
+    - on project "SharerBlazorServer"
