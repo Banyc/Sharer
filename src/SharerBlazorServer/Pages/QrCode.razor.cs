@@ -122,7 +122,7 @@ namespace SharerBlazorServer.Pages
             // order interfaces by speed and filter out down and loopback
             // take first of the remaining
             var upInterfaces = NetworkInterface.GetAllNetworkInterfaces()
-                .OrderByDescending(c => c.Speed)
+                // .OrderByDescending(c => c.Speed)
                 .Where(c => c.NetworkInterfaceType != NetworkInterfaceType.Loopback && c.OperationalStatus == OperationalStatus.Up)
                 .ToList();
             if (upInterfaces != null)
