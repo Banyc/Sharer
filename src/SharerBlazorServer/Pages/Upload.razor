@@ -1,0 +1,112 @@
+﻿@page "/upload"
+@using System.IO
+@using System.Text
+@using System.Net.Http.Headers
+@using Tewr.Blazor.FileReader
+@using Microsoft.Extensions.Configuration
+
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+@inject IFileReaderService fileReaderService
+@inject IJSRuntime JsRuntime
+@inject IConfiguration Configuration
+
+@* https://docs.microsoft.com/en-us/aspnet/core/blazor/advanced-scenarios?view=aspnetcore-3.1#perform-large-data-transfers-in-blazor-server-apps *@
+
+
+<h1>Upload</h1>
+
+<div class="mb-5">
+    <input @bind="additionalText" type="text" class="form-control mb-1" name="addition_text" style="height:50px" placeholder="Please type in ..." autofocus/>
+    <input @onchange="FileInputChanged" @ref="fileInput" type="file" class="btn-lg form-control btn btn-outline-primary mb-1" style="height:80px" name="input_file" multiple/>
+    <button type="submit" class="btn-lg form-control btn btn-outline-secondary" style="height:50px" @onclick="UploadFilesAsync">Submit</button>
+</div>
+
+@* <button class="btn btn-primary" @onclick="UploadFilesAsync">Click me</button> *@
+<button class="btn btn-primary" @onclick="TestGetAsync">Test Get</button>
+<button class="btn btn-primary" @onclick="TestPostAsync">Test POST</button>
+
+<ul>
+    @foreach (var item in listItems)
+    {
+        @* <SurveyPrompt Title="@item"></SurveyPrompt> *@
+        <li>@item</li>
+    }
+</ul>
+
+@code {
+    private ElementReference fileInput;
+    private string additionalText;
+    private List<string> listItems = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        @* this.httpClient.BaseAddress = new Uri(this.NavigationManager.BaseUri); *@
+        this.httpClient.BaseAddress = new Uri(this.Configuration["BackendBaseUrl"]);
+    }
+
+    private async Task TestGetAsync()
+    {
+        var httpResponse = this.httpClient.GetAsync("api/fileupload");
+        string response = await httpResponse.Result.Content.ReadAsStringAsync();
+        this.listItems.Insert(0, response);
+    }
+
+    private async Task TestPostAsync()
+    {
+        var data = new StringContent("hello", Encoding.UTF8, "application/text");
+        var httpResponse = this.httpClient.PostAsync("api/fileupload", data);
+        string response = await httpResponse.Result.Content.ReadAsStringAsync();
+        this.listItems.Insert(0, response);
+    }
+
+    private async Task UploadFilesAsync()
+    {
+        UploadTextAsync(additionalText, "addition_text");
+
+        foreach (var file in await fileReaderService.CreateReference(fileInput).EnumerateFilesAsync())
+        {
+            UploadSingleFileAsync(file);
+        }
+    }
+
+    private async Task UploadTextAsync(string text, string name)
+    {
+        var multipartFormDataContent = new MultipartFormDataContent();
+        multipartFormDataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+
+        HttpContent textContent = new StringContent(text);
+        multipartFormDataContent.Add(textContent, name);
+        var httpResponse = this.httpClient.PostAsync("api/fileupload", multipartFormDataContent);
+        string response = await httpResponse.Result.Content.ReadAsStringAsync();
+        this.listItems.Insert(0, response);
+        this.StateHasChanged();
+    }
+
+    private async Task UploadSingleFileAsync(IFileReference file)
+    {
+        if (file != null)
+        {
+            var multipartFormDataContent = new MultipartFormDataContent();
+            multipartFormDataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+
+            var fileInfo = await file.ReadFileInfoAsync();
+            // Read into buffer and act (uses less memory)
+            @* await using (Stream stream = await file.OpenReadAsync()) { *@
+            using (MemoryStream stream = await file.CreateMemoryStreamAsync()) {
+                stream.Position = 0;
+                HttpContent fileContent = new StreamContent(stream);
+                multipartFormDataContent.Add(fileContent, "file", fileInfo.Name);
+                var httpResponse = this.httpClient.PostAsync("api/fileupload", multipartFormDataContent);
+                string response = await httpResponse.Result.Content.ReadAsStringAsync();
+                this.listItems.Insert(0, response);
+                this.StateHasChanged();
+            }
+        }
+    }
+
+    private void FileInputChanged(ChangeEventArgs e)
+    {
+        
+    }
+}

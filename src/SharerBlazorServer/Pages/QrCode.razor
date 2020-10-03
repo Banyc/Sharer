@@ -1,0 +1,21 @@
+@page "/qrcode"
+
+<div class="container mb-2">
+    <h1 class="h1">Entrances</h1>
+    <div class="text-center">
+        @foreach (IpQr ipQr in this.IpQrs)
+        {
+            <div class="container mb-2">
+                <h1 class="display-4">@ipQr.Config.Name</h1>
+                <h1 class="h1 text-muted">@ipQr.Config.SafeUrl</h1>
+                <img class="img-fluid w-50" src="@ipQr.SafeQr">
+            </div>
+            <div class="container mb-2">
+                <h1 class="display-4">@ipQr.Config.Name</h1>
+                <h1 class="h1 text-muted">@ipQr.Config.UnsafeUrl</h1>
+                <img class="img-fluid w-50" src="@ipQr.UnsafeQr">
+            </div>
+        }
+    </div>
+    
+</div>

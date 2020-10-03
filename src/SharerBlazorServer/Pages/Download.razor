@@ -1,0 +1,52 @@
+@page "/download"
+@using System.IO
+@using System.Text
+@using System.Text.Json
+@using System.Net.Http.Headers
+@using Microsoft.Extensions.Configuration
+
+@inject NavigationManager NavigationManager
+@inject HttpClient httpClient
+@inject IJSRuntime JsRuntime
+@inject IConfiguration Configuration
+
+
+<h1>Download</h1>
+
+<button class="btn btn-primary" @onclick="RefleshAsync">Reflesh</button>
+
+<ul>
+    @{
+        int i = 0;
+        foreach (var item in files)
+        {
+            <a href="api/filedownload/downloadfile?filename=@item" download>
+                <li @onclick=@(() => OnItemClicked(item))>@item</li>
+            </a>
+            i++;
+        }
+    }
+</ul>
+
+@code {
+    private List<string> files = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        @* this.httpClient.BaseAddress = new Uri(this.NavigationManager.BaseUri); *@
+        this.httpClient.BaseAddress = new Uri(this.Configuration["BackendBaseUrl"]);
+        await RefleshAsync().ConfigureAwait(false);
+    }
+
+    private async Task RefleshAsync()
+    {
+        HttpResponseMessage httpResponse = await this.httpClient.GetAsync("api/filedownload/getfilelist");
+        var responseString = await httpResponse.Content.ReadAsStringAsync();
+        this.files = JsonSerializer.Deserialize<List<string>>(responseString);
+    }
+
+    private void OnItemClicked(string filename)
+    {
+        @* httpClient.GetAsync("") *@
+    }
+}
