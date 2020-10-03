@@ -16,6 +16,7 @@ using System.Drawing;
 using System.IO;
 
 using QRCoder;
+using Microsoft.AspNetCore.Components;
 
 namespace SharerBlazorServer.Pages
 {
@@ -88,6 +89,9 @@ namespace SharerBlazorServer.Pages
 
     public partial class QrCode
     {
+        [Inject]
+        private NavigationManager NavigationManager { get; set; }
+
         public List<IpQr> IpQrs { set; get; }
 
         public QrCode()
@@ -108,6 +112,12 @@ namespace SharerBlazorServer.Pages
 
         private List<IpConfig> GetThisIPConfig()
         {
+            if (!this.NavigationManager.BaseUri.Contains("localhost")
+            && !this.NavigationManager.BaseUri.Contains("127.0.0.1")
+            && !this.NavigationManager.BaseUri.Contains("::1"))
+            {
+                return new List<IpConfig>();
+            }
             List<IpConfig> configs = new List<IpConfig>();
             // order interfaces by speed and filter out down and loopback
             // take first of the remaining
