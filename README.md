@@ -49,6 +49,7 @@ For Linux + MacOS users:
 
 - ~~[ ] Password + ban IP after excessive tries~~
 - [ ] Add "Open download folder" on the QR page
-- [ ] Huge file transfer
+- [x] Huge file transfer
+    - on project ["SharerBlazorServer"](src/SharerBlazorServer)
 - [x] Transfer through RESTful API
-    - on project "SharerBlazorServer"
+    - on project ["SharerBlazorServer"](src/SharerBlazorServer)

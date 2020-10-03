@@ -26,7 +26,7 @@
 <button class="btn btn-primary" @onclick="TestGetAsync">Test Get</button>
 <button class="btn btn-primary" @onclick="TestPostAsync">Test POST</button>
 
-<ul>
+<ul style="word-wrap: break-word">
     @foreach (var item in listItems)
     {
         @* <SurveyPrompt Title="@item"></SurveyPrompt> *@
@@ -38,6 +38,8 @@
     private ElementReference fileInput;
     private string additionalText;
     private List<string> listItems = new List<string>();
+    private static int bufferSize = 1024 * 1024 * 4;
+    private byte[] buffer = new byte[bufferSize];
 
     protected override async Task OnInitializedAsync()
     {
@@ -66,7 +68,8 @@
 
         foreach (var file in await fileReaderService.CreateReference(fileInput).EnumerateFilesAsync())
         {
-            UploadSingleFileAsync(file);
+            // UploadSingleFileInMemoryAsync(file);
+            UploadSingleFileByChunkAsync(file);
         }
     }
 
@@ -82,8 +85,7 @@
         this.listItems.Insert(0, response);
         this.StateHasChanged();
     }
-
-    private async Task UploadSingleFileAsync(IFileReference file)
+    private async Task UploadSingleFileInMemoryAsync(IFileReference file)
     {
         if (file != null)
         {
@@ -91,8 +93,8 @@
             multipartFormDataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
 
             var fileInfo = await file.ReadFileInfoAsync();
-            // Read into buffer and act (uses less memory)
-            @* await using (Stream stream = await file.OpenReadAsync()) { *@
+
+            // Read file fully into memory and act
             using (MemoryStream stream = await file.CreateMemoryStreamAsync()) {
                 stream.Position = 0;
                 HttpContent fileContent = new StreamContent(stream);
@@ -103,6 +105,71 @@
                 this.StateHasChanged();
             }
         }
+    }
+
+    private async Task UploadSingleFileByChunkAsync(IFileReference file)
+    {
+        if (file != null)
+        {
+            var multipartFormDataContent = new MultipartFormDataContent();
+            multipartFormDataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+
+            var fileInfo = await file.ReadFileInfoAsync();
+            // Read into buffer and act (uses less memory)
+
+            await using (Stream stream = await file.OpenReadAsync()) {
+                int fileSize = (int)fileInfo.Size;
+                int start = 0;
+                int end = 0;
+                do
+                {
+                    end = start + bufferSize;
+                    if (end > fileSize)
+                    {
+                        end = fileSize;
+                    }
+
+                    byte[] buffer = await SliceFileAsync(stream, start, end, this.buffer);
+                    await SendFileAsync(buffer, start, end, fileInfo.Name, fileSize, end == fileSize);
+                    
+                    start += bufferSize;
+
+                } while (end < fileSize);
+            }
+        }
+    }
+
+    private async Task<byte[]> SliceFileAsync(Stream stream, int start, int end, byte[] buffer)
+    {
+        stream.Position = start;
+        // Do (async) stuff with stream...
+        await stream.ReadAsync(buffer, 0, end - start);
+
+        // return newBuffer;
+        return buffer;
+    }
+
+    private async Task SendFileAsync(byte[] piece, int start, int end, string filename, int fileSize, bool isFinal)
+    {
+        var multipartFormDataContent = new MultipartFormDataContent();
+        multipartFormDataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+
+        var fileContent = new ByteArrayContent(piece);
+        var startIndexContent = new StringContent(start.ToString());
+        var endIndexContent = new StringContent(end.ToString());
+        var isFinalContent = new StringContent(isFinal.ToString());
+        var fileSizeContent = new StringContent(fileSize.ToString());
+
+        multipartFormDataContent.Add(fileSizeContent, "fileSize");
+        multipartFormDataContent.Add(isFinalContent, "isFinal");
+        multipartFormDataContent.Add(startIndexContent, "start");
+        multipartFormDataContent.Add(endIndexContent, "end");
+        multipartFormDataContent.Add(fileContent, "file", filename);
+        var httpResponse = this.httpClient.PostAsync("api/fileupload", multipartFormDataContent);
+        string response = await httpResponse.Result.Content.ReadAsStringAsync();
+        // this.listItems.Insert(0, new { Request = $"{start}-{end}", Response = response}.ToString());
+        this.listItems.Insert(0, response);
+        this.StateHasChanged();
     }
 
     private void FileInputChanged(ChangeEventArgs e)

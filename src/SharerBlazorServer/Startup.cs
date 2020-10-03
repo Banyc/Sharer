@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using SharerBlazorServer.Data;
 using Tewr.Blazor.FileReader;
 using Microsoft.AspNetCore.Authentication.Certificate;
+using SharerBlazorServer.Services;
 
 namespace SharerBlazorServer
 {
@@ -36,6 +37,9 @@ namespace SharerBlazorServer
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
+            services.AddSingleton<ResumeFileService>();
+            services.AddOptions();
+            services.Configure<ResumeFileSettings>(this.Configuration.GetSection("ResumeFileSettings"));
             services.AddControllers();
             // services.AddTransient(_ => new HttpClient { BaseAddress = new Uri(this.Configuration.GetValue<string>("BaseUrl")) });
             // services.AddTransient(_ => new HttpClient { BaseAddress = new Uri(this.Configuration.GetValue<string>("Url")) });
