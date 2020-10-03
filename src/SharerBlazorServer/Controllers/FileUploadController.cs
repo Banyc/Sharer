@@ -64,7 +64,8 @@ namespace SharerBlazorServer.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex}");
+                _logger.LogError($"Internal server error: {ex}");
+                return StatusCode(500, "Learn more from server logs");
             }
         }
 
