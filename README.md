@@ -1,6 +1,6 @@
 # Sharer
 
-Share photo and text from any device to computer
+Share photo and text between any device and the APP host.
 
 ## Demo
 
