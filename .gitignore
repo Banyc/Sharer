@@ -1,1 +1,5 @@
 .vscode/
+*.zip
+*.ps1
+*.sh
+*.service
