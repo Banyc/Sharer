@@ -48,8 +48,10 @@ namespace SharerBlazorServer.Controllers
             {
                 return NotFound();
             }
-            var content = System.IO.File.ReadAllBytes(filePath);
-            return File(content, "application/octet-stream", filename);
+            // do NOT prepend a `using` keyword, which will dispose the stream before the file is downloaded
+            FileStream fileStream = System.IO.File.OpenRead(filePath);
+
+            return File(fileStream, "application/octet-stream", filename);
         }
     }
 }
