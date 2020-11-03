@@ -3,3 +3,4 @@
 *.ps1
 *.sh
 *.service
+*.local*
