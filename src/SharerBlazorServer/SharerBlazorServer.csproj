@@ -10,4 +10,10 @@
     <PackageReference Include="Tewr.Blazor.FileReader" Version="2.1.0.20274" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Remove="appsettings.local.json"/>
+    <Content Remove="appsettings.local.json"/>
+    <None Remove="appsettings.local.json"/>
+  </ItemGroup>
+
 </Project>
