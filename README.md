@@ -15,25 +15,19 @@ Share photo and text between any device and the APP host.
 ## Warning
 
 - About security
-    - This app does NOT provide any security. Under HTTP protocol, the message sent is not encrypted, which might be safely passed in a trusted LAN or through a private hot spot.
-    - If using SSL protocol, the certificate is self-signed. Before sending files, please make sure the public key fields of certificates in both client and server are identical.
+    - In sub-project ["SharerBlazorServer"](src/SharerBlazorServer), it uses SSL protocol, where the certificate is self-signed. Before sending files, please make sure the public key fields of certificates in both client and server are identical.
+    - In sub-project ["Sharer"](src/Sharer), it does NOT provide any security. Under HTTP protocol, the message sent is not encrypted, which might be safely passed in a trusted LAN or through a private hot spot.
 - About performance
-    - for project ["Sharer"](src/Sharer)
-        - The file transfer is only performed by form posting.
     - for project ["SharerBlazorServer"](src/SharerBlazorServer)
         - The files are uploaded by chunks.
+    - for project ["Sharer"](src/Sharer)
+        - The file transfer is only performed by form posting.
 
 ## Notices
 
 The presumed `pwd` is [`src/Sharer`](src/Sharer) or [`src/SharerBlazorServer`](src/SharerBlazorServer).
 
 Sub-project [`src/Sharer`](src/Sharer) is no longer under development due to its traditional HTTP model. Please switch to [`src/SharerBlazorServer`](src/SharerBlazorServer).
-
-## Build
-
-This might cost a long time
-
-    dotnet publish -r win-x64 -c Release /p:PublishSingleFile=true
 
 ## How to use
 
@@ -51,6 +45,12 @@ For Linux + MacOS + Windows users:
 
 - run `dotnet run`
 - the folder `upload.user` (Sharer) or `Resources` (SharerBlazorServer) in the root of the project is where the files locate.
+
+## Publish
+
+This might cost a long time
+
+    dotnet publish -r win-x64 -c Release /p:PublishSingleFile=true
 
 ## TODO
 
