@@ -27,6 +27,8 @@ Share photo and text between any device and the APP host.
 
 The presumed `pwd` is [`src/Sharer`](src/Sharer) or [`src/SharerBlazorServer`](src/SharerBlazorServer).
 
+Sub-project [`src/Sharer`](src/Sharer) is no longer under development due to its traditional HTTP model. Please switch to [`src/SharerBlazorServer`](src/SharerBlazorServer).
+
 ## Build
 
 This might cost a long time
