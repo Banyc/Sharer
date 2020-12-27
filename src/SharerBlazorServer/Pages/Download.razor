@@ -41,6 +41,12 @@
     private async Task RefleshAsync()
     {
         HttpResponseMessage httpResponse = await this.httpClient.GetAsync("api/filedownload/getfilelist");
+        if (!httpResponse.IsSuccessStatusCode)
+        {
+            throw new Exception(
+$@"File list fetching error: {(int)httpResponse.StatusCode} {httpResponse.StatusCode}
+Try except local address from the use of the proxy server.");
+        }
         var responseString = await httpResponse.Content.ReadAsStringAsync();
         this.files = JsonSerializer.Deserialize<List<string>>(responseString);
     }
