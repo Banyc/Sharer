@@ -2,8 +2,10 @@
 @using System.IO
 @using System.Text
 @using System.Net.Http.Headers
+@using System.Text.Json
 @using Tewr.Blazor.FileReader
 @using Microsoft.Extensions.Configuration
+@using Models
 
 @inject HttpClient httpClient
 @inject NavigationManager NavigationManager
@@ -135,7 +137,7 @@
                     }
 
                     byte[] buffer = await SliceFileAsync(stream, start, end, this.buffer);
-                    await SendFileAsync(buffer, start, end, fileInfo.Name, fileSize, end == fileSize);
+                    await SendFileAsync(buffer, start, end, fileInfo.Name, fileSize);
                     
                     start += bufferSize;
 
@@ -154,25 +156,23 @@
         return buffer;
     }
 
-    private async Task SendFileAsync(byte[] piece, int start, int end, string filename, int fileSize, bool isFinal)
+    private async Task SendFileAsync(byte[] piece, int start, int end, string filename, int fileSize)
     {
-        var multipartFormDataContent = new MultipartFormDataContent();
-        multipartFormDataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
-
-        var fileContent = new ByteArrayContent(piece);
-        var startIndexContent = new StringContent(start.ToString());
-        var endIndexContent = new StringContent(end.ToString());
-        var isFinalContent = new StringContent(isFinal.ToString());
-        var fileSizeContent = new StringContent(fileSize.ToString());
-
-        multipartFormDataContent.Add(fileSizeContent, "fileSize");
-        multipartFormDataContent.Add(isFinalContent, "isFinal");
-        multipartFormDataContent.Add(startIndexContent, "start");
-        multipartFormDataContent.Add(endIndexContent, "end");
-        multipartFormDataContent.Add(fileContent, "file", filename);
-        var httpResponse = this.httpClient.PostAsync("api/fileupload", multipartFormDataContent);
-        string response = await httpResponse.Result.Content.ReadAsStringAsync();
-        // this.listItems.Insert(0, new { Request = $"{start}-{end}", Response = response}.ToString());
+        FileSliceModel fileSlice = new()
+        {
+            Piece = piece,
+            Start = start,
+            End = end,
+            Filename = filename,
+            FileSize = fileSize,
+            FileMd5 = "",
+        };
+        HttpRequestMessage request = new(HttpMethod.Post, "api/fileupload/filepiece")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(fileSlice), Encoding.UTF8, "application/json")
+        };
+        var httpResponse = await this.httpClient.SendAsync(request);
+        string response = await httpResponse.Content.ReadAsStringAsync();
         this.listItems.Insert(0, response);
         this.StateHasChanged();
     }
