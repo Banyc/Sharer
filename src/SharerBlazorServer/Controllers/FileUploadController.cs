@@ -31,6 +31,13 @@ namespace SharerBlazorServer.Controllers
             return Ok(new { Filename = fileSlice.Filename, Range = $"{fileSlice.Start}-{fileSlice.End}/{fileSlice.FileSize}", Progress = $"{progress}" });
         }
 
+        [HttpPost("text")]
+        public IActionResult HandleText(TextModel text)
+        {
+            Console.WriteLine(text.Text);
+            return Ok();
+        }
+
         [HttpGet]
         public IActionResult Get()
         {

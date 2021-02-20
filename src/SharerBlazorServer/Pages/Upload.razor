@@ -21,12 +21,8 @@
 <div class="mb-5">
     <input @bind="additionalText" type="text" class="form-control mb-1" name="addition_text" style="height:50px" placeholder="Please type in ..." autofocus/>
     <input @onchange="FileInputChanged" @ref="fileInput" type="file" class="btn-lg form-control btn btn-outline-primary mb-1" style="height:80px" name="input_file" multiple/>
-    <button type="submit" class="btn-lg form-control btn btn-outline-secondary" style="height:50px" @onclick="UploadFilesAsync">Submit</button>
+    <button type="submit" class="btn-lg form-control btn btn-outline-secondary" style="height:50px" @onclick="OnButtonSubmit_Click">Submit</button>
 </div>
-
-@* <button class="btn btn-primary" @onclick="UploadFilesAsync">Click me</button> *@
-@* <button class="btn btn-primary" @onclick="TestGetAsync">Test Get</button> *@
-@* <button class="btn btn-primary" @onclick="TestPostAsync">Test POST</button> *@
 
 <ul style="word-wrap: break-word">
     @foreach (var item in listItems)
@@ -49,68 +45,26 @@
         this.httpClient.BaseAddress = new Uri(this.Configuration["BackendBaseUrl"]);
     }
 
-    private async Task TestGetAsync()
+    public async Task OnButtonSubmit_Click()
     {
-        var httpResponse = this.httpClient.GetAsync("api/fileupload");
-        string response = await httpResponse.Result.Content.ReadAsStringAsync();
-        this.listItems.Insert(0, response);
+        UploadTextAsync();
+        UploadFilesAsync();
     }
 
-    private async Task TestPostAsync()
+    private async Task UploadTextAsync()
     {
-        var data = new StringContent("hello", Encoding.UTF8, "application/text");
-        var httpResponse = this.httpClient.PostAsync("api/fileupload", data);
-        string response = await httpResponse.Result.Content.ReadAsStringAsync();
-        this.listItems.Insert(0, response);
+        HttpRequestMessage request = new(HttpMethod.Post, "api/fileupload/text")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(new TextModel { Text = additionalText }), Encoding.UTF8, "application/json")
+        };
+        var httpResponse = await this.httpClient.SendAsync(request);
     }
 
     private async Task UploadFilesAsync()
     {
-        UploadTextAsync(additionalText, "addition_text");
-
         foreach (var file in await fileReaderService.CreateReference(fileInput).EnumerateFilesAsync())
         {
-            // UploadSingleFileInMemoryAsync(file);
             UploadSingleFileByChunkAsync(file);
-        }
-    }
-
-    private async Task UploadTextAsync(string text, string name)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return;
-        }
-
-        var multipartFormDataContent = new MultipartFormDataContent();
-        multipartFormDataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
-
-        HttpContent textContent = new StringContent(text);
-        multipartFormDataContent.Add(textContent, name);
-        var httpResponse = this.httpClient.PostAsync("api/fileupload", multipartFormDataContent);
-        string response = await httpResponse.Result.Content.ReadAsStringAsync();
-        this.listItems.Insert(0, response);
-        this.StateHasChanged();
-    }
-    private async Task UploadSingleFileInMemoryAsync(IFileReference file)
-    {
-        if (file != null)
-        {
-            var multipartFormDataContent = new MultipartFormDataContent();
-            multipartFormDataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
-
-            var fileInfo = await file.ReadFileInfoAsync();
-
-            // Read file fully into memory and act
-            using (MemoryStream stream = await file.CreateMemoryStreamAsync()) {
-                stream.Position = 0;
-                HttpContent fileContent = new StreamContent(stream);
-                multipartFormDataContent.Add(fileContent, "file", fileInfo.Name);
-                var httpResponse = this.httpClient.PostAsync("api/fileupload", multipartFormDataContent);
-                string response = await httpResponse.Result.Content.ReadAsStringAsync();
-                this.listItems.Insert(0, response);
-                this.StateHasChanged();
-            }
         }
     }
 
@@ -118,9 +72,6 @@
     {
         if (file != null)
         {
-            var multipartFormDataContent = new MultipartFormDataContent();
-            multipartFormDataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
-
             var fileInfo = await file.ReadFileInfoAsync();
             // Read into buffer and act (uses less memory)
 
