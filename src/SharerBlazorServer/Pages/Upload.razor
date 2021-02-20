@@ -75,6 +75,11 @@
 
     private async Task UploadTextAsync(string text, string name)
     {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
         var multipartFormDataContent = new MultipartFormDataContent();
         multipartFormDataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
 
