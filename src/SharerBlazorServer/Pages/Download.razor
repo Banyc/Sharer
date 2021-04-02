@@ -14,26 +14,27 @@
 <h1>Download</h1>
 
 <button class="btn btn-primary" @onclick="RefleshAsync">Reflesh</button>
-
-<ul style="word-wrap: break-word">
-    @{
-        int i = 0;
-        foreach (var item in files)
-        {
-            <a href="api/filedownload/downloadfile?filename=@item" download>
-                <li @onclick=@(() => OnItemClicked(item))>@item</li>
-            </a>
-            i++;
+    
+<div class="p-2">
+    <ul style="word-wrap: break-word">
+        @{
+            int i = 0;
+            foreach (var item in files)
+            {
+                <a href="api/filedownload/downloadfile?filename=@item" download>
+                    <li @onclick=@(() => OnItemClicked(item))>@item</li>
+                </a>
+                i++;
+            }
         }
-    }
-</ul>
+    </ul>
+</div>
 
 @code {
     private List<string> files = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
-        @* this.httpClient.BaseAddress = new Uri(this.NavigationManager.BaseUri); *@
         this.httpClient.BaseAddress = new Uri(this.Configuration["BackendBaseUrl"]);
         await RefleshAsync().ConfigureAwait(false);
     }
