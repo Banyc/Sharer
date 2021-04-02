@@ -11,7 +11,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharerBlazorServer.Data;
-using Tewr.Blazor.FileReader;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using SharerBlazorServer.Services;
 using SharerBlazorServer.Controllers;
@@ -46,7 +45,6 @@ namespace SharerBlazorServer
             // services.AddTransient(_ => new HttpClient { BaseAddress = new Uri(this.Configuration.GetValue<string>("BaseUrl")) });
             // services.AddTransient(_ => new HttpClient { BaseAddress = new Uri(this.Configuration.GetValue<string>("Url")) });
             services.AddTransient<HttpClient>();
-            services.AddFileReaderService();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
