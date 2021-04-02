@@ -46,7 +46,13 @@ namespace SharerBlazorServer.Controllers
         [HttpPost("text")]
         public IActionResult HandleText(TextModel text)
         {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("========");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(text.Text);
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("========");
+            Console.ForegroundColor = ConsoleColor.White;
             return Ok();
         }
 
