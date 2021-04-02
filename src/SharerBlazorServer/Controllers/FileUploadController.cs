@@ -34,11 +34,13 @@ namespace SharerBlazorServer.Controllers
                 }
                 else
                 {
+                    _logger.LogError("Fail to write file piece.");
                     return NotFound();
                 }
             }
             else
             {
+                _logger.LogError("File piece is mutated.");
                 return NotFound();
             }
         }
