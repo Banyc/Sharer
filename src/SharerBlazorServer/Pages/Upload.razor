@@ -25,17 +25,24 @@
 </div>
 
 <ul style="word-wrap: break-word">
-    @foreach (var item in listItems)
+    @foreach (var item in listItems.AsEnumerable().Reverse())
     {
-        @* <SurveyPrompt Title="@item"></SurveyPrompt> *@
-        <li>@item</li>
+        <li @key=item.Filename>
+            <div class="card m-2">
+                @(item.Filename)
+                <br/>
+                @($"{(double)item.FileSize / 1024:0.##} MB")
+                <br/>
+                @($"{item.Process * 100:0} %")
+            </div>
+        </li>
     }
 </ul>
 
 @code {
     private ElementReference fileInput;
     private string additionalText;
-    private List<string> listItems = new List<string>();
+    private List<FileSliceInfoModel> listItems = new();
     private static int bufferSize = 1024 * 1024 * 4;
     private byte[] buffer = new byte[bufferSize];
 
@@ -124,7 +131,26 @@
         };
         var httpResponse = await this.httpClient.SendAsync(request);
         string response = await httpResponse.Content.ReadAsStringAsync();
-        this.listItems.Insert(0, response);
+        
+        FileSliceInfoModel fileSliceInfo = new()
+        {
+            End = fileSlice.End,
+            FileMd5 = fileSlice.FileMd5,
+            Filename = fileSlice.Filename,
+            FileSize = fileSlice.FileSize,
+            Start = fileSlice.Start
+        };
+        int listItemIndex = this.listItems.FindIndex(xxxx => xxxx.Filename == fileSlice.Filename);
+        if (listItemIndex == -1)
+        {
+            this.listItems.Add(fileSliceInfo);
+        }
+        else
+        {
+            this.listItems.RemoveAt(listItemIndex);
+            this.listItems.Insert(listItemIndex, fileSliceInfo);
+        }
+
         this.StateHasChanged();
     }
 
