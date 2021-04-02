@@ -31,7 +31,7 @@
             <div class="card m-2">
                 @(item.Filename)
                 <br/>
-                @($"{(double)item.FileSize / 1024:0.##} MB")
+                @item.FileSizeHumanReadable
                 <br/>
                 @($"{item.Process * 100:0} %")
             </div>

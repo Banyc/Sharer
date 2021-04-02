@@ -10,5 +10,26 @@ namespace SharerBlazorServer.Models
         public double Process {
             get => ((double)this.End) / this.FileSize;
         }
+        public string FileSizeHumanReadable {
+            get
+            {
+                if (this.FileSize < 1024)
+                {
+                    return $"{this.FileSize:0} B";
+                }
+                else if (this.FileSize < 1024 * 1024)
+                {
+                    return $"{this.FileSize / 1024:0} KB";
+                }
+                else if (this.FileSize < 1024 * 1024 * 1024)
+                {
+                    return $"{(double)this.FileSize / (1024 * 1024):0.##} M";
+                }
+                else
+                {
+                    return $"{(double)this.FileSize / (1024 * 1024 * 1024):0.##} G";
+                }
+            }
+        }
     }
 }
