@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace SharerBlazorServer.Models
 {
     public class FileSliceInfoModel
@@ -6,10 +8,13 @@ namespace SharerBlazorServer.Models
         public int End { get; set; }
         public string Filename { get; set; }
         public int FileSize { get; set; }
-        public string FileMd5 { get; set; }
+        public int FilePieceHashCode { get; set; }
+
+        [JsonIgnore]
         public double Process {
             get => ((double)this.End) / this.FileSize;
         }
+        [JsonIgnore]
         public string FileSizeHumanReadable {
             get
             {

@@ -25,8 +25,22 @@ namespace SharerBlazorServer.Controllers
         [HttpPost("filepiece"), DisableRequestSizeLimit]
         public IActionResult HandleFilePiece(FileSliceModel fileSlice)
         {
-            this.resumeFile.AddPiece(fileSlice);
-            return Ok();
+            if (fileSlice.IsIntegral)
+            {
+                bool isSucceeded = this.resumeFile.TryAddPiece(fileSlice);
+                if (isSucceeded)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         [HttpPost("text")]

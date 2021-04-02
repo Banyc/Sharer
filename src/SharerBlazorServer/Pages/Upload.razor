@@ -3,6 +3,7 @@
 @using System.Text
 @using System.Net.Http.Headers
 @using System.Text.Json
+@using System.Numerics
 @using Tewr.Blazor.FileReader
 @using Microsoft.Extensions.Configuration
 @using Models
@@ -95,8 +96,14 @@
                     }
 
                     byte[] buffer = await SliceFileAsync(stream, start, end, this.buffer);
-                    await SendFileAsync(buffer, start, end, fileInfo.Name, fileSize);
-                    
+                    bool isSendGood = await TrySendFileAsync(buffer, start, end, fileInfo.Name, fileSize);
+                    if (!isSendGood)
+                    {
+                        fileSize = (int)fileInfo.Size;
+                        start = 0;
+                        end = 0;
+                        continue;
+                    }
                     start += bufferSize;
 
                 } while (end < fileSize);
@@ -114,7 +121,7 @@
         return buffer;
     }
 
-    private async Task SendFileAsync(byte[] piece, int start, int end, string filename, int fileSize)
+    private async Task<bool> TrySendFileAsync(byte[] piece, int start, int end, string filename, int fileSize)
     {
         FileSliceModel fileSlice = new()
         {
@@ -123,19 +130,30 @@
             End = end,
             Filename = filename,
             FileSize = fileSize,
-            FileMd5 = "",
+            FilePieceHashCode = new BigInteger(piece).GetHashCode(),
         };
         HttpRequestMessage request = new(HttpMethod.Post, "api/fileupload/filepiece")
         {
             Content = new StringContent(JsonSerializer.Serialize(fileSlice), Encoding.UTF8, "application/json")
         };
+
         var httpResponse = await this.httpClient.SendAsync(request);
+        int tryCount = 0;
+        while (!httpResponse.IsSuccessStatusCode)
+        {
+            if (tryCount > 3)
+            {
+                return false;
+            }
+            httpResponse = await this.httpClient.SendAsync(request);
+            tryCount++;
+        }
         string response = await httpResponse.Content.ReadAsStringAsync();
         
         FileSliceInfoModel fileSliceInfo = new()
         {
             End = fileSlice.End,
-            FileMd5 = fileSlice.FileMd5,
+            FilePieceHashCode = fileSlice.FilePieceHashCode,
             Filename = fileSlice.Filename,
             FileSize = fileSlice.FileSize,
             Start = fileSlice.Start
@@ -152,6 +170,7 @@
         }
 
         this.StateHasChanged();
+        return true;
     }
 
     private void FileInputChanged(ChangeEventArgs e)

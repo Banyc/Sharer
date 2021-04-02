@@ -23,11 +23,11 @@ namespace SharerBlazorServer.Services
             Directory.CreateDirectory(options.Value.SaveDirectory);
         }
 
-        public void AddPiece(FileSliceModel slice)
+        public bool TryAddPiece(FileSliceModel slice)
         {
-            if (!this.filenameStream.Keys.Contains(slice.Filename))
+            lock (this)
             {
-                lock (this)
+                if (!this.filenameStream.Keys.Contains(slice.Filename))
                 {
                     string filePath = Path.Combine(this.config.SaveDirectory, slice.Filename);
                     if (File.Exists(filePath))
@@ -40,7 +40,7 @@ namespace SharerBlazorServer.Services
                 }
             }
 
-            this.filenameStream[slice.Filename].AddPiece(slice);
+            return this.filenameStream[slice.Filename].TryAddPiece(slice);
         }
 
         private void OnComplete(FilestreamWriter sender)
