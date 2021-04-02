@@ -61,8 +61,10 @@
 
     public async Task OnButtonSubmit_Click()
     {
-        UploadTextAsync();
-        UploadFilesAsync();
+        var uploadTextTask = UploadTextAsync();
+        var uploadFilesTask = UploadFilesAsync();
+
+        await Task.WhenAll(uploadTextTask, uploadFilesTask);
     }
 
     private async Task UploadTextAsync()
@@ -81,9 +83,12 @@
 
         try
         {
-            foreach (var file in this.selectedFiles)
+            if (this.selectedFiles != null)
             {
-                await UploadSingleFileByChunkAsync(file);
+                foreach (var file in this.selectedFiles)
+                {
+                    await UploadSingleFileByChunkAsync(file);
+                }
             }
         }
         catch (Exception ex)
