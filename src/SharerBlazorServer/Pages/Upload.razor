@@ -4,13 +4,11 @@
 @using System.Net.Http.Headers
 @using System.Text.Json
 @using System.Numerics
-@using Tewr.Blazor.FileReader
 @using Microsoft.Extensions.Configuration
 @using Models
 
 @inject HttpClient httpClient
 @inject NavigationManager NavigationManager
-@inject IFileReaderService fileReaderService
 @inject IJSRuntime JsRuntime
 @inject IConfiguration Configuration
 
@@ -21,8 +19,15 @@
 
 <div class="mb-5">
     <input @bind="additionalText" type="text" class="form-control mb-1" name="addition_text" style="height:50px" placeholder="Please type in ..." autofocus/>
-    <input @onchange="FileInputChanged" @ref="fileInput" type="file" class="btn-lg form-control btn btn-outline-primary mb-1" style="height:80px" name="input_file" multiple/>
-    <button type="submit" class="btn-lg form-control btn btn-outline-secondary" style="height:50px" @onclick="OnButtonSubmit_Click">Submit</button>
+    <InputFile OnChange=OnFileInputChanged class="btn-lg form-control btn btn-outline-primary mb-1" style="height:80px" name="input_file" multiple/>
+    @if (this.isLoading)
+    {
+        <button disabled type="submit" class="btn-lg form-control btn btn-outline-secondary" style="height:50px" @onclick=OnButtonSubmit_Click>Submitting...</button>
+    }
+    else
+    {
+        <button type="submit" class="btn-lg form-control btn btn-outline-secondary" style="height:50px" @onclick=OnButtonSubmit_Click>Submit</button>
+    }
 </div>
 
 <ul style="word-wrap: break-word">
@@ -41,11 +46,12 @@
 </ul>
 
 @code {
-    private ElementReference fileInput;
     private string additionalText;
     private List<FileSliceInfoModel> listItems = new();
     private static int bufferSize = 1024 * 1024 * 4;
     private byte[] buffer = new byte[bufferSize];
+    private bool isLoading = false;
+    private IReadOnlyList<IBrowserFile> selectedFiles;
 
     protected override async Task OnInitializedAsync()
     {
@@ -70,21 +76,33 @@
 
     private async Task UploadFilesAsync()
     {
-        foreach (var file in await fileReaderService.CreateReference(fileInput).EnumerateFilesAsync())
+        this.isLoading = true;
+        StateHasChanged();
+
+        try
         {
-            UploadSingleFileByChunkAsync(file);
+            foreach (var file in this.selectedFiles)
+            {
+                UploadSingleFileByChunkAsync(file);
+            }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Error] {ex.Message}");
+        }
+
+        this.isLoading = false;
+        StateHasChanged();
     }
 
-    private async Task UploadSingleFileByChunkAsync(IFileReference file)
+    private async Task UploadSingleFileByChunkAsync(IBrowserFile file)
     {
         if (file != null)
         {
-            var fileInfo = await file.ReadFileInfoAsync();
-            // Read into buffer and act (uses less memory)
-
-            await using (Stream stream = await file.OpenReadAsync()) {
-                int fileSize = (int)fileInfo.Size;
+            // Phone might share the same stream with all the files.
+            // this shall not be executes in parallel.
+            using (var stream = file.OpenReadStream(long.MaxValue)) {
+                int fileSize = (int)file.Size;
                 int start = 0;
                 int end = 0;
                 do
@@ -96,10 +114,10 @@
                     }
 
                     byte[] buffer = await SliceFileAsync(stream, start, end, this.buffer);
-                    bool isSendGood = await TrySendFileAsync(buffer, start, end, fileInfo.Name, fileSize);
+                    bool isSendGood = await TrySendFileAsync(buffer, start, end, file.Name, fileSize);
                     if (!isSendGood)
                     {
-                        fileSize = (int)fileInfo.Size;
+                        fileSize = (int)file.Size;
                         start = 0;
                         end = 0;
                         continue;
@@ -113,7 +131,12 @@
 
     private async Task<byte[]> SliceFileAsync(Stream stream, int start, int end, byte[] buffer)
     {
-        stream.Position = start;
+        if (stream.Position != start)
+        {
+            // this is not supported.
+            // it will throw an error.
+            stream.Position = start;
+        }
         // Do (async) stuff with stream...
         await stream.ReadAsync(buffer, 0, end - start);
 
@@ -173,8 +196,8 @@
         return true;
     }
 
-    private void FileInputChanged(ChangeEventArgs e)
+    private void OnFileInputChanged(InputFileChangeEventArgs e)
     {
-        
+        this.selectedFiles = e.GetMultipleFiles(int.MaxValue);
     }
 }
