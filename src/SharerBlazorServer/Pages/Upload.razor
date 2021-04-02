@@ -83,7 +83,7 @@
         {
             foreach (var file in this.selectedFiles)
             {
-                UploadSingleFileByChunkAsync(file);
+                await UploadSingleFileByChunkAsync(file);
             }
         }
         catch (Exception ex)
