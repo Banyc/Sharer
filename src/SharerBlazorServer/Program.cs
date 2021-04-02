@@ -22,7 +22,7 @@ namespace SharerBlazorServer
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration(builder =>
-                    builder.AddJsonFile("appsettings.local.json", true)
+                    builder.AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true)
                 )
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 using SharerBlazorServer.Models;
 using SharerBlazorServer.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace SharerBlazorServer.Services
 {
@@ -14,12 +15,14 @@ namespace SharerBlazorServer.Services
 
     public class ResumeFileService
     {
+        private readonly ILogger<ResumeFileService> _logger;
         private readonly ResumeFileSettings config;
         private readonly Dictionary<string, FilestreamWriter> filenameStream = new();
 
-        public ResumeFileService(IOptions<ResumeFileSettings> options)
+        public ResumeFileService(IOptions<ResumeFileSettings> options, ILogger<ResumeFileService> logger)
         {
             this.config = options.Value;
+            _logger = logger;
             Directory.CreateDirectory(options.Value.SaveDirectory);
         }
 
