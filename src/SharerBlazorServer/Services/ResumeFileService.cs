@@ -32,12 +32,38 @@ namespace SharerBlazorServer.Services
             {
                 if (!this.filenameStream.Keys.Contains(slice.Filename))
                 {
-                    string filePath = Path.Combine(this.config.SaveDirectory, slice.Filename);
+                    // determine file path
+                    string filePath;
+                    if (slice.Filename.IndexOfAny(Path.GetInvalidFileNameChars()) == -1)
+                    {
+                        // valid file name
+                        filePath = Path.Combine(this.config.SaveDirectory, slice.Filename);
+                    }
+                    else
+                    {
+                        // invalid file name
+                        filePath = Path.Combine(this.config.SaveDirectory,
+                            slice.Filename.GetHashCode().ToString());
+                    }
+                    // rewrite file if exists
                     if (File.Exists(filePath))
                     {
                         File.Delete(filePath);
                     }
-                    FileStream stream = File.OpenWrite(filePath);
+                    // try build file stream
+                    FileStream stream;
+                    try
+                    {
+                        stream = File.OpenWrite(filePath);
+                    }
+                    catch (PathTooLongException)
+                    {
+                        // invalid file name
+                        filePath = Path.Combine(this.config.SaveDirectory,
+                            slice.Filename.GetHashCode().ToString());
+                        stream = File.OpenWrite(filePath);
+                    }
+                    // save the file stream for further use
                     this.filenameStream[slice.Filename] = new(stream);
                     this.filenameStream[slice.Filename].OnComplete += this.OnComplete;
                 }
