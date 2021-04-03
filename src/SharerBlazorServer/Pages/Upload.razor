@@ -34,7 +34,7 @@
     @foreach (var item in listItems.AsEnumerable().Reverse())
     {
         <li @key=item.Filename class="list-group-item list-group-item-action card p-0 shadow-sm border-0 m-2">
-            <div class="d-flex">
+            <div class="d-flex flex-wrap">
                 @if (!string.IsNullOrEmpty(item.Thumbnail))
                 {
                     <img class="rounded mr-2" src=@item.Thumbnail />
