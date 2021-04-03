@@ -21,7 +21,6 @@ namespace SharerBlazorServer.Models
                 return GetHumanReadableSize(this.FileSize);
             }
         }
-
         [JsonIgnore]
         public string EndHumanReadable
         {
@@ -30,6 +29,9 @@ namespace SharerBlazorServer.Models
                 return GetHumanReadableSize(this.End);
             }
         }
+        // image data url
+        [JsonIgnore]
+        public string Thumbnail { get; set; }
 
         private static string GetHumanReadableSize(int byteSize)
         {
