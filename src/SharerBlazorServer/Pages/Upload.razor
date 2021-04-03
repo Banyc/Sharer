@@ -171,6 +171,7 @@
 
     private async Task<bool> TrySendFileAsync(byte[] piece, int start, int end, string filename, int fileSize)
     {
+        // send to the back end
         FileSliceModel fileSlice = new()
         {
             Piece = piece,
@@ -198,6 +199,7 @@
         }
         string response = await httpResponse.Content.ReadAsStringAsync();
         
+        // update view model
         FileSliceInfoModel fileSliceInfo = new()
         {
             End = fileSlice.End,
