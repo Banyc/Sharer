@@ -33,32 +33,38 @@
 <ul class="list-group" style="word-wrap: break-word">
     @foreach (var item in listItems.AsEnumerable().Reverse())
     {
-        <li @key=item.Filename class="list-group-item list-group-item-action card p-1 shadow-sm border-0 m-2">
-            <div class="card-body">
-                <div class="card-title">
-                    <text>@(item.Filename)</text>
-                </div>
-                @* <br/> *@
-                <div class="card-text text-muted">
-                    @if (item.End == item.FileSize)
-                    {
-                        <text>@item.FileSizeHumanReadable</text>
-                    }
-                    else
-                    {
-                        <text>@item.EndHumanReadable</text>
-                        <text> / </text>
-                        <text>@item.FileSizeHumanReadable</text>
-                        <br/>
-                        <div class="progress" style="height: 20px;">
-                            <div class="progress-bar"
-                                style="width: @(item.Process * 100)%;"
-                                role="progressbar"
-                                aria-valuenow="@(item.Process * 100)" aria-valuemin="0" aria-valuemax="100">
-                                @($"{item.Process * 100:0} %")
+        <li @key=item.Filename class="list-group-item list-group-item-action card p-0 shadow-sm border-0 m-2">
+            <div class="d-flex">
+                @if (!string.IsNullOrEmpty(item.Thumbnail))
+                {
+                    <img class="rounded mr-2" src=@item.Thumbnail />
+                }
+                <div class="card-body p-3">
+                    <div class="card-title">
+                        <text>@(item.Filename)</text>
+                    </div>
+                    @* <br/> *@
+                    <div class="card-text text-muted">
+                        @if (item.End == item.FileSize)
+                        {
+                            <text>@item.FileSizeHumanReadable</text>
+                        }
+                        else
+                        {
+                            <text>@item.EndHumanReadable</text>
+                            <text> / </text>
+                            <text>@item.FileSizeHumanReadable</text>
+                            <br/>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar"
+                                    style="width: @(item.Process * 100)%;"
+                                    role="progressbar"
+                                    aria-valuenow="@(item.Process * 100)" aria-valuemin="0" aria-valuemax="100">
+                                    @($"{item.Process * 100:0} %")
+                                </div>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
                 </div>
             </div>
         </li>
@@ -124,6 +130,19 @@
     {
         if (file != null)
         {
+            // get thumbnail
+            string thumbnailDataUrl = "";
+            string[] imageExtensions = { "png", "jpeg", "jpg", "gif" };
+            if (Path.HasExtension(file.Name) && imageExtensions.Contains(Path.GetExtension(file.Name).TrimStart('.')))
+            {
+                try
+                {
+                    var thumbnail = await file.RequestImageFileAsync("image/png", 200, 100);
+                    thumbnailDataUrl = await GetImageDataUrlAsync(thumbnail);
+                }
+                catch (Exception) { }
+            }
+
             // Phone might share the same stream with all the files.
             // this shall not be executes in parallel.
             using (var stream = file.OpenReadStream(long.MaxValue)) {
@@ -138,8 +157,21 @@
                         end = fileSize;
                     }
 
+                    // slice file
                     byte[] buffer = await SliceFileAsync(stream, start, end, this.buffer);
-                    bool isSendGood = await TrySendFileAsync(buffer, start, end, file.Name, fileSize);
+                    // build model
+                    FileSliceModel fileSlice = new()
+                    {
+                        Piece = buffer,
+                        Start = start,
+                        End = end,
+                        Filename = file.Name,
+                        FileSize = fileSize,
+                        FilePieceHashCode = new BigInteger(buffer).GetHashCode(),
+                        Thumbnail = thumbnailDataUrl
+                    };
+                    // try send the slice
+                    bool isSendGood = await TrySendFileAsync(fileSlice);
                     if (!isSendGood)
                     {
                         fileSize = (int)file.Size;
@@ -152,6 +184,15 @@
                 } while (end < fileSize);
             }
         }
+    }
+
+    private async Task<string> GetImageDataUrlAsync(IBrowserFile image, string format = "image/png")
+    {
+        var buffer = new byte[image.Size];
+        await image.OpenReadStream().ReadAsync(buffer);
+        var imageDataUrl =
+            $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+            return imageDataUrl;
     }
 
     private async Task<byte[]> SliceFileAsync(Stream stream, int start, int end, byte[] buffer)
@@ -169,18 +210,9 @@
         return buffer;
     }
 
-    private async Task<bool> TrySendFileAsync(byte[] piece, int start, int end, string filename, int fileSize)
+    private async Task<bool> TrySendFileAsync(FileSliceModel fileSlice)
     {
         // send to the back end
-        FileSliceModel fileSlice = new()
-        {
-            Piece = piece,
-            Start = start,
-            End = end,
-            Filename = filename,
-            FileSize = fileSize,
-            FilePieceHashCode = new BigInteger(piece).GetHashCode(),
-        };
         HttpRequestMessage request = new(HttpMethod.Post, "api/fileupload/filepiece")
         {
             Content = new StringContent(JsonSerializer.Serialize(fileSlice), Encoding.UTF8, "application/json")
@@ -206,7 +238,8 @@
             FilePieceHashCode = fileSlice.FilePieceHashCode,
             Filename = fileSlice.Filename,
             FileSize = fileSlice.FileSize,
-            Start = fileSlice.Start
+            Start = fileSlice.Start,
+            Thumbnail = fileSlice.Thumbnail
         };
         int listItemIndex = this.listItems.FindIndex(xxxx => xxxx.Filename == fileSlice.Filename);
         if (listItemIndex == -1)
